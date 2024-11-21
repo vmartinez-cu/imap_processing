@@ -158,7 +158,6 @@ def process_packets(
                 "timedelta64[ns]"
             )
         ).astype("datetime64[D]")
-
         primary_packet_properties = MagL1aPacketProperties(
             mag_l0.SHCOARSE,
             primary_start_time,
@@ -284,9 +283,7 @@ def generate_dataset(
 
     # TODO: Just leave time in datetime64 type with vector as dtype object to avoid this
     # Get the timestamp from the end of the vector
-    time_data = single_file_l1a.vectors[:, 4].astype(
-        np.dtype("datetime64[ns]"), copy=False
-    )
+    time_data = single_file_l1a.vectors[:, 4]
 
     compression = xr.DataArray(
         np.arange(2),
@@ -326,17 +323,21 @@ def generate_dataset(
     )
 
     direction_label = xr.DataArray(
-        direction.astype(str),
+        direction.values.astype(str),
         name="direction_label",
         dims=["direction_label"],
-        attrs=attribute_manager.get_variable_attributes("direction_label"),
+        attrs=attribute_manager.get_variable_attributes(
+            "direction_label", check_schema=False
+        ),
     )
 
     compression_label = xr.DataArray(
-        compression.astype(str),
+        compression.values.astype(str),
         name="compression_label",
         dims=["compression_label"],
-        attrs=attribute_manager.get_variable_attributes("compression_label"),
+        attrs=attribute_manager.get_variable_attributes(
+            "compression_label", check_schema=False
+        ),
     )
 
     output = xr.Dataset(
@@ -344,12 +345,11 @@ def generate_dataset(
             "epoch": epoch_time,
             "direction": direction,
             "compression": compression,
-            "direction_label": direction_label,
-            "compression_label": compression_label,
         },
         attrs=attribute_manager.get_global_attributes(logical_file_id),
     )
-
+    output["direction_label"] = direction_label
+    output["compression_label"] = compression_label
     output["vectors"] = vectors
     output["compression_flags"] = compression_flags
 
