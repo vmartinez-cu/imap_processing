@@ -19,6 +19,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 import spiceypy as spice
+from numpy.typing import NDArray
 
 from imap_processing.spice.kernels import ensure_spice
 
@@ -489,3 +490,78 @@ def basis_vectors(
     ... spacecraft_z = basis_vectors[:, 2]
     """
     return np.moveaxis(get_rotation_matrix(et, from_frame, to_frame), -1, -2)
+
+
+def cartesian_to_spherical(
+    v: NDArray,
+) -> NDArray:
+    """
+    Convert cartesian coordinates to spherical coordinates.
+
+    Parameters
+    ----------
+    v : np.ndarray
+        A NumPy array with shape (n, 3) where each
+        row represents a vector
+        with x, y, z-components.
+
+    Returns
+    -------
+    spherical_coords : np.ndarray
+        A NumPy array with shape (n, 3), where each row contains
+        the spherical coordinates (r, azimuth, elevation):
+
+        - r : Distance of the point from the origin.
+        - azimuth : angle in the xy-plane in radians [0, 2*pi].
+        - elevation : angle from the z-axis in radians [-pi/2, pi/2].
+    """
+    # Magnitude of the velocity vector
+    magnitude_v = np.linalg.norm(v, axis=-1, keepdims=True)
+
+    vhat = v / magnitude_v
+
+    # Elevation angle (angle from the z-axis, range: [-pi/2, pi/2])
+    el = np.arcsin(vhat[..., 2])
+
+    # Azimuth angle (angle in the xy-plane, range: [0, 2*pi])
+    az = np.arctan2(vhat[..., 1], vhat[..., 0])
+
+    # Ensure azimuth is from 0 to 2PI
+    az = az % (2 * np.pi)
+    spherical_coords = np.stack(
+        (np.squeeze(magnitude_v), np.degrees(az), np.degrees(el)), axis=-1
+    )
+
+    return spherical_coords
+
+
+def spherical_to_cartesian(spherical_coords: NDArray) -> NDArray:
+    """
+    Convert spherical coordinates to Cartesian coordinates.
+
+    Parameters
+    ----------
+    spherical_coords : np.ndarray
+        A NumPy array with shape (n, 3), where each row contains
+        the spherical coordinates (r, azimuth, elevation):
+
+        - r : Distance of the point from the origin.
+        - azimuth : angle in the xy-plane in radians [0, 2*pi].
+        - elevation : angle from the z-axis in radians [-pi/2, pi/2].
+
+    Returns
+    -------
+    cartesian_coords : np.ndarray
+        Cartesian coordinates.
+    """
+    r = spherical_coords[..., 0]
+    azimuth = spherical_coords[..., 1]
+    elevation = spherical_coords[..., 2]
+
+    x = r * np.cos(elevation) * np.cos(azimuth)
+    y = r * np.cos(elevation) * np.sin(azimuth)
+    z = r * np.sin(elevation)
+
+    cartesian_coords = np.stack((x, y, z), axis=-1)
+
+    return cartesian_coords

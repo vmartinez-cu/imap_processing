@@ -9,6 +9,7 @@ from imap_processing.spice.geometry import (
     SpiceBody,
     SpiceFrame,
     basis_vectors,
+    cartesian_to_spherical,
     frame_transform,
     get_instrument_spin_phase,
     get_rotation_matrix,
@@ -17,6 +18,7 @@ from imap_processing.spice.geometry import (
     get_spin_data,
     imap_state,
     instrument_pointing,
+    spherical_to_cartesian,
 )
 from imap_processing.spice.kernels import ensure_spice
 
@@ -335,3 +337,52 @@ def test_basis_vectors():
                 SpiceFrame.ECLIPJ2000,
             ),
         )
+
+
+def test_cartesian_to_spherical():
+    """Tests cartesian_to_spherical function."""
+
+    step = 0.05
+    x = np.arange(-1, 1 + step, step)
+    y = np.arange(-1, 1 + step, step)
+    z = np.arange(-1, 1 + step, step)
+    x, y, z = np.meshgrid(x, y, z)
+
+    cartesian_points = np.stack((x.ravel(), y.ravel(), z.ravel()), axis=-1)
+
+    for point in cartesian_points:
+        r, az, el = cartesian_to_spherical(point)
+        r_spice, colat_spice, slong_spice = spice.recsph(point)
+
+        # Convert SPICE co-latitude to elevation
+        el_spice = 90 - np.degrees(colat_spice)
+        az_spice = np.degrees(slong_spice)
+
+        # Normalize azimuth to [0, 360]
+        az_spice = az_spice % 360
+
+        np.testing.assert_allclose(r, r_spice, atol=1e-5)
+        np.testing.assert_allclose(az, az_spice, atol=1e-5)
+        np.testing.assert_allclose(el, el_spice, atol=1e-5)
+
+
+def test_spherical_to_cartesian():
+    """Tests spherical_to_cartesian function."""
+
+    azimuth = np.linspace(0, 2 * np.pi, 50)
+    elevation = np.linspace(-np.pi / 2, np.pi / 2, 50)
+    theta, elev = np.meshgrid(azimuth, elevation)
+    r = 1.0
+
+    spherical_points = np.stack(
+        (r * np.ones_like(theta).ravel(), theta.ravel(), elev.ravel()), axis=-1
+    )
+
+    # Convert elevation to colatitude for SPICE
+    colat = np.pi / 2 - spherical_points[:, 2]
+
+    for i in range(len(colat)):
+        cartesian_coords = spherical_to_cartesian(np.array([spherical_points[i]]))
+        spice_coords = spice.sphrec(r, colat[i], spherical_points[i, 1])
+
+        np.testing.assert_allclose(cartesian_coords[0], spice_coords, atol=1e-5)
