@@ -8,11 +8,13 @@ from imap_processing.spice import IMAP_SC_ID
 from imap_processing.spice.time import (
     TICK_DURATION,
     _sct2e_wrapper,
+    et_to_utc,
     j2000ns_to_j2000s,
     met_to_datetime64,
     met_to_j2000ns,
     met_to_sclkticks,
     met_to_utc,
+    str_to_et,
 )
 
 
@@ -122,3 +124,58 @@ def test_sct2e_wrapper(sclk_ticks):
         assert isinstance(et, float)
     else:
         assert len(et) == len(sclk_ticks)
+
+
+def test_str_to_et(furnish_time_kernels):
+    """Test coverage for string to et conversion function."""
+    utc = "2017-07-14T19:46:00"
+    # Test single value input
+    expected_et = 553333629.1837274
+    actual_et = str_to_et(utc)
+    assert expected_et == actual_et
+
+    # Test list input
+    list_of_utc = [
+        "2017-08-14T19:46:00.000",
+        "2017-09-14T19:46:00.000",
+        "2017-10-14T19:46:00.000",
+    ]
+
+    expected_et_array = np.array(
+        (556012029.1829445, 558690429.1824446, 561282429.1823651)
+    )
+    actual_et_array = str_to_et(list_of_utc)
+    assert np.array_equal(expected_et_array, actual_et_array)
+
+    # Test array input
+    array_of_utc = np.array(
+        [
+            "2017-08-14T19:46:00.000",
+            "2017-09-14T19:46:00.000",
+            "2017-10-14T19:46:00.000",
+        ]
+    )
+
+    actual_et_array = str_to_et(array_of_utc)
+    assert np.array_equal(expected_et_array, actual_et_array)
+
+
+def test_et_to_utc(furnish_time_kernels):
+    """Test coverage for et to utc conversion function."""
+    et = 553333629.1837274
+    # Test single value input
+    expected_utc = "2017-07-14T19:46:00.000"
+    actual_utc = et_to_utc(et)
+    assert expected_utc == actual_utc
+
+    # Test array input
+    array_of_et = np.array((556012029.1829445, 558690429.1824446, 561282429.1823651))
+    expected_utc_array = np.array(
+        (
+            "2017-08-14T19:46:00.000",
+            "2017-09-14T19:46:00.000",
+            "2017-10-14T19:46:00.000",
+        )
+    )
+    actual_utc_array = et_to_utc(array_of_et)
+    assert np.array_equal(expected_utc_array, actual_utc_array)

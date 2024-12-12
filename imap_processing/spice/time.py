@@ -1,7 +1,7 @@
 """Time conversion functions that rely on SPICE."""
 
 import typing
-from collections.abc import Collection
+from collections.abc import Collection, Iterable
 from typing import Union
 
 import numpy as np
@@ -163,3 +163,72 @@ def _sct2e_wrapper(
         return np.array([spice.sct2e(IMAP_SC_ID, s) for s in sclk_ticks])
     else:
         return spice.sct2e(IMAP_SC_ID, sclk_ticks)
+
+
+@typing.no_type_check
+@ensure_spice
+def str_to_et(
+    time_str: Union[str, Iterable[str]],
+) -> Union[float, np.ndarray]:
+    """
+    Convert string to ephemeris time.
+
+    Decorated wrapper for spiceypy.str2et that vectorizes the function in addition
+    to wrapping with the @ensure_spice automatic kernel furnishing functionality.
+    https://spiceypy.readthedocs.io/en/main/documentation.html#spiceypy.spiceypy.str2et
+
+    Parameters
+    ----------
+    time_str : str or Iterable[str]
+        Input string(s) to be converted to ephemeris time.
+
+    Returns
+    -------
+    ephemeris_time: np.ndarray
+        Ephemeris time, seconds past J2000.
+    """
+    if isinstance(time_str, str):
+        return spice.str2et(time_str)
+    else:
+        return np.array([spice.str2et(t) for t in time_str])
+
+
+@typing.no_type_check
+@ensure_spice
+def et_to_utc(
+    et: Union[float, Iterable[float]],
+    format_str: str = "ISOC",
+    precision: int = 3,
+    utclen: int = 24,
+) -> Union[str, np.ndarray]:
+    """
+    Convert ephemeris time to UTC.
+
+    Decorated wrapper for spiceypy.et2utc that vectorizes the function in addition
+    to wrapping with the @ensure_spice automatic kernel furnishing functionality.
+    https://spiceypy.readthedocs.io/en/main/documentation.html#spiceypy.spiceypy.et2utc
+
+    Parameters
+    ----------
+    et : float or Iterable[float]
+        Input ephemeris time(s) to be converted to UTC.
+    format_str : str
+        Format of the output time string. Default is "ISOC". All options:
+        "C" Calendar format, UTC.
+        "D" Day-of-Year format, UTC.
+        "J" Julian Date format, UTC.
+        "ISOC" ISO Calendar format, UTC.
+        "ISOD" ISO Day-of-Year format, UTC.
+    precision : int
+        Digits of precision in fractional seconds or days. Default is 3.
+    utclen : int
+        The length of the output string. Default is 24 (to accommodate the
+        "YYYY-MM-DDT00:00:00.000" format + 1). From the NAIF docs: if the output string
+        is expected to have `x` characters, utclen` must be x + 1.
+
+    Returns
+    -------
+    utc_time : str or np.ndarray
+        UTC time(s).
+    """
+    return spice.et2utc(et, format_str, precision, utclen)
