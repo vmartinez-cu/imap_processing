@@ -26,7 +26,8 @@ def hk_packet_filepath():
 @pytest.fixture(scope="module")
 def sci_packet_filepath():
     """Set path to test data file"""
-    return imap_module_directory / "tests/hit/test_data/sci_sample1.ccsds"
+    # return imap_module_directory / "tests/hit/test_data/sci_sample1.ccsds"
+    return imap_module_directory / "tests/hit/test_data/sci_sample_mar_18_24.ccsds"
 
 
 def test_validate_l1a_housekeeping_data(hk_packet_filepath):
@@ -164,7 +165,8 @@ def test_validate_l1a_counts_data(sci_packet_filepath):
 
     # Read in the validation data
     validation_data = pd.read_csv(
-        imap_module_directory / "tests/hit/validation_data/sci_sample_raw1.csv"
+        # imap_module_directory / "tests/hit/validation_data/sci_sample_raw1.csv"
+        imap_module_directory / "tests/hit/validation_data/hit_l1a_sample2_nsrl.csv"
     )
 
     # Helper functions for this test
