@@ -44,6 +44,7 @@ class SpiceFrame(IntEnum):
     # Standard SPICE Frames
     J2000 = spice.irfnum("J2000")
     ECLIPJ2000 = spice.irfnum("ECLIPJ2000")
+    ITRF93 = 13000
     # IMAP Pointing Frame (Despun) as defined in imap_science_0001.tf
     IMAP_DPS = -43901
     # IMAP specific as defined in imap_wkcp.tf
@@ -85,6 +86,7 @@ BORESIGHT_LOOKUP = {
 def imap_state(
     et: Union[np.ndarray, float],
     ref_frame: SpiceFrame = SpiceFrame.ECLIPJ2000,
+    abcorr: str = "NONE",
     observer: SpiceBody = SpiceBody.SUN,
 ) -> np.ndarray:
     """
@@ -96,10 +98,12 @@ def imap_state(
     ----------
     et : np.ndarray or float
         Epoch time(s) [J2000 seconds] to get the IMAP state for.
-    ref_frame : SpiceFrame
+    ref_frame : SpiceFrame (Optional)
         Reference frame which the IMAP state is expressed in. Default is
         SpiceFrame.ECLIPJ2000.
-    observer : SpiceBody
+    abcorr : str (Optional)
+        Aberration correction flag. Default is "NONE".
+    observer : SpiceBody (Optional)
         Observing body. Default is SpiceBody.SUN.
 
     Returns
@@ -109,7 +113,7 @@ def imap_state(
      IMAP spacecraft.
     """
     state, _ = spice.spkezr(
-        SpiceBody.IMAP.name, et, ref_frame.name, "NONE", observer.name
+        SpiceBody.IMAP.name, et, ref_frame.name, abcorr, observer.name
     )
     return np.asarray(state)
 
