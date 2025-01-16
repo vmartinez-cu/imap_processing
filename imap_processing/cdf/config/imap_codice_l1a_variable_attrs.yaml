@@ -1,6 +1,8 @@
 # <=== Defaults ===>
 default_attrs: &default
+    DEPEND_0: epoch
     DISPLAY_TYPE: no_plot
+    FIELDNAM: " "
     FILLVAL: -9223372036854775808
     FORMAT: I12
     SCALETYP: linear
@@ -16,11 +18,12 @@ hskp_attrs: &hskp_default
 
 # <=== Coordinates ===>
 esa_step:
-    <<: *default
     CATDESC: Energy per charge (E/q) sweeping step
     FIELDNAM: Energy Index
+    FILLVAL: 254
     FORMAT: I3
     LABLAXIS: Energy Index
+    SCALETYP: linear
     SI_CONVERSION: " > "
     UNITS: " "
     VALIDMIN: 0
@@ -28,11 +31,12 @@ esa_step:
     VAR_TYPE: support_data
 
 inst_az:
-    <<: *default
     CATDESC: Instrument Azimuth Index
     FIELDNAM: Azimuth Index
-    FORMAT: I2
-    LABLAXIS: " "
+    FILLVAL: 254
+    FORMAT: I3
+    LABLAXIS: Azimuth Index
+    SCALETYP: linear
     SI_CONVERSION: " > "
     UNITS: " "
     VALIDMIN: 0
@@ -40,11 +44,12 @@ inst_az:
     VAR_TYPE: support_data
 
 spin_sector:
-    <<: *default
     CATDESC: Spin sector indicating range of spin angles
     FIELDNAM: Spin Sector Index
-    FORMAT: I2
-    LABLAXIS: " "
+    FILLVAL: 254
+    FORMAT: I3
+    LABLAXIS: Spin Sector
+    SCALETYP: linear
     SI_CONVERSION: " > "
     UNITS: " "
     VALIDMIN: 0
@@ -54,13 +59,13 @@ spin_sector:
 # <=== Dataset Variable Attributes ===>
 # The following are set in multiple data products
 acquisition_time_per_step:
-    <<: *default
     CATDESC: Acquisition time for each step of energy
     DEPEND_1: esa_step
     FIELDNAM: Acquisition Time
     FILLVAL: -1.0e+30
     FORMAT: F10.3
-    LABLAXIS: " "
+    LABLAXIS: Acquisition Time
+    SCALETYP: linear
     SI_CONVERSION: " > "
     UNITS: ms
     VALIDMIN: 0.000000
@@ -70,27 +75,122 @@ acquisition_time_per_step:
 counters_attrs: &counters
     <<: *default
     CATDESC: Fill in at creation
-    DEPEND_0: epoch
-    DEPEND_1: esa_step
     DISPLAY_TYPE: time_series
     FIELDNAM: Fill in at creation
+    FORMAT: I7
+    SCALETYP: linear
+    SI_CONVERSION: " > "
     UNITS: counts
     VALIDMIN: 0
     VALIDMAX: 8388607  # max value for a signed 24-bit integer
+    VAR_TYPE: data
+
+data_quality:
+    <<: *default
+    CATDESC: Indicates whether data quality is suspect (1).
+    DISPLAY_TYPE: time_series
+    FIELDNAM: Data Quality
+    FILLVAL: 255
+    FORMAT: I1
+    LABLAXIS: Data Quality
+    SCALETYP: linear
+    SI_CONVERSION: " > "
+    UNITS: " "
+    VALIDMIN: 0
+    VALIDMAX: 1
+    VAR_TYPE: data
 
 energy_table:
-    <<: *default
     CATDESC: ElectroStatic Analyzer Energy Values
     DEPEND_1: esa_step
-    FIELDNAM: ESA Voltage
+    FIELDNAM: Energy Table
     FORMAT: I5
-    LABLAXIS: ESA V
+    LABLAXIS: eV
     SCALETYP: log
     SI_CONVERSION: " > "
     UNITS: eV
     VALIDMIN: 1
     VALIDMAX: 14100
     VAR_TYPE: support_data
+
+nso_half_spin:
+    <<: *default
+    CATDESC: When No Scan Operation (NSO) was activated
+    DISPLAY_TYPE: time_series
+    FIELDNAM: NSO Mode
+    FILLVAL: 255
+    FORMAT: I3
+    LABLAXIS: NSO Half Spin
+    SCALETYP: linear
+    SI_CONVERSION: " > "
+    UNITS: half spin number
+    VALIDMIN: 0
+    VALIDMAX: 255
+    VAR_NOTES: Indicates the point when No Scan Operation (NSO) was activated. In NSO, the ESA voltage is set to the first step in the scan and remains fixed until the next cycle boundary.
+    VAR_TYPE: data
+
+rgfo_half_spin:
+    <<: *default
+    CATDESC: When Reduced Gain Factor Operation (RGFO) was activated
+    DISPLAY_TYPE: time_series
+    FIELDNAM: RGFO Mode
+    FILLVAL: 255
+    FORMAT: I3
+    LABLAXIS: RGFO Half Spin
+    SCALETYP: linear
+    SI_CONVERSION: " > "
+    UNITS: half spin number
+    VALIDMIN: 0
+    VALIDMAX: 255
+    VAR_NOTES: Indicates the point when Reduced Gain Factor Operation (RGFO) was activated. In RGFO, the Entrance ESA voltage is reduced in order to limit the number of ions that reach the detectors.
+    VAR_TYPE: data
+
+spin_period:
+    <<: *default
+    CATDESC: The spin period as reported by the spacecraft.
+    DISPLAY_TYPE: time_series
+    FIELDNAM: Spin Period
+    FILLVAL: 1.0e+31
+    FORMAT: F3.1
+    LABLAXIS: Spin Period
+    SCALETYP: linear
+    SI_CONVERSION: " > "
+    UNITS: s
+    VALIDMIN: 0.0
+    VALIDMAX: 16.0
+    VAR_TYPE: data
+
+st_bias_gain_mode:
+    <<: *default
+    CATDESC: Suprathermal Bias Gain Mode
+    DISPLAY_TYPE: " "
+    FIELDNAM: Suprathermal Bias Gain Mode
+    FILLVAL: 255
+    FORMAT: I1
+    LABLAXIS: Suprathermal Bias Gain Mode
+    SCALETYP: linear
+    SI_CONVERSION: " > "
+    UNITS: " "
+    VALIDMIN: 0
+    VALIDMAX: 1
+    VAR_NOTES: Indicates whether FSW is tracking the Suprathermal High-Gain bias curve or the Suprathermal Low-Gain bias curve.
+    VAR_TYPE: data
+
+sw_bias_gain_mode:
+    <<: *default
+    CATDESC: Solarwind Bias Gain Mode
+    DISPLAY_TYPE: " "
+    FIELDNAM: Solarwind Bias Gain Mode
+    FILLVAL: 255
+    FORMAT: I1
+    LABLAXIS: Solarwind Bias Gain Mode
+    SCALETYP: linear
+    SI_CONVERSION: " > "
+    UNITS: " "
+    VALIDMIN: 0
+    VALIDMAX: 1
+    VAR_NOTES: Indicates whether FSW is tracking the Solarwind High-Gain bias curve or the Solarwind Low-Gain bias curve.
+    VAR_TYPE: data
 
 # The following are data product-specific
 # hi-counters-aggregated
@@ -248,41 +348,56 @@ lo-sw-angular-hplus:
     <<: *counters
     CATDESC: Sunward H+ Species
     FIELDNAM: SW - H+
-    LABL_PTR_1: inst_az
-    LABL_PTR_2: spin_sector
-    LABL_PTR_3: esa_step
+    DEPEND_1: esa_step
+    DEPEND_2: inst_az
+    DEPEND_3: spin_sector
+    LABL_PTR_1: esa_step
+    LABL_PTR_2: inst_az
+    LABL_PTR_3: spin_sector
 
 lo-sw-angular-heplusplus:
     <<: *counters
     CATDESC: Sunward He++ Species
     FIELDNAM: SW - He++
-    LABL_PTR_1: inst_az
-    LABL_PTR_2: spin_sector
-    LABL_PTR_3: esa_step
+    DEPEND_1: esa_step
+    DEPEND_2: inst_az
+    DEPEND_3: spin_sector
+    LABL_PTR_1: esa_step
+    LABL_PTR_2: inst_az
+    LABL_PTR_3: spin_sector
 
 lo-sw-angular-oplus6:
     <<: *counters
     CATDESC: Sunward O+6 Species
     FIELDNAM: SW - O+6
-    LABL_PTR_1: inst_az
-    LABL_PTR_2: spin_sector
-    LABL_PTR_3: esa_step
+    DEPEND_1: esa_step
+    DEPEND_2: inst_az
+    DEPEND_3: spin_sector
+    LABL_PTR_1: esa_step
+    LABL_PTR_2: inst_az
+    LABL_PTR_3: spin_sector
 
 lo-sw-angular-fe_loq:
     <<: *counters
     CATDESC: Sunward Fe lowQ Species
     FIELDNAM: SW - Fe lowQ
-    LABL_PTR_1: inst_az
-    LABL_PTR_2: spin_sector
-    LABL_PTR_3: esa_step
+    DEPEND_1: esa_step
+    DEPEND_2: inst_az
+    DEPEND_3: spin_sector
+    LABL_PTR_1: esa_step
+    LABL_PTR_2: inst_az
+    LABL_PTR_3: spin_sector
 
 lo-nsw-angular-heplusplus:
     <<: *counters
     CATDESC: Non-sunward He++ Species
     FIELDNAM: NSW - He++
-    LABL_PTR_1: inst_az
-    LABL_PTR_2: spin_sector
-    LABL_PTR_3: esa_step
+    DEPEND_1: esa_step
+    DEPEND_2: inst_az
+    DEPEND_3: spin_sector
+    LABL_PTR_1: esa_step
+    LABL_PTR_2: inst_az
+    LABL_PTR_3: spin_sector
 
 # lo-sw-priority
 lo-sw-priority-p0_tcrs:
@@ -705,12 +820,6 @@ spin_bin_period:
     LABLAXIS: SPIN_BIN_PERIOD
     FIELDNAM: Spin Bin Period
     CATDESC: Spin Bin Period
-
-spin_period:
-    <<: *hskp_default
-    LABLAXIS: SPIN_PERIOD
-    FIELDNAM: Current Spin Period
-    CATDESC: Current Spin Period
 
 spin_period_timer:
     <<: *hskp_default
