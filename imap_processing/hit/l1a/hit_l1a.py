@@ -238,23 +238,3 @@ def process_science(
         logger.info(f"HIT L1A dataset created for {logical_source}")
 
     return datasets
-
-
-if __name__ == "__main__":
-    from imap_processing import imap_module_directory
-
-    # L0 file path
-    packet_file = (
-        imap_module_directory / "tests/hit/test_data/sci_sample_mar_18_24.ccsds"
-    )
-
-    datasets = hit_l1a(packet_file, "001")
-
-    # datasets_by_apid = packet_file_to_datasets(
-    #     packet_file=packet_file,
-    #     xtce_packet_definition=packet_definition,
-    # )
-
-    # science_dataset = datasets[1252]
-
-    print(datasets)
