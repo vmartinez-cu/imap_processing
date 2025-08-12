@@ -396,6 +396,7 @@ def subset_sectored_counts(
     # ensures that livetime doesn't get filtered when the original
     # epoch dimension is filtered for complete sets.
     sectored_counts_dataset = update_livetime_coord(sectored_counts_dataset)
+    print(f"epoch size before filtering: {len(sectored_counts_dataset.epoch)}")
 
     # Identify 10-minute intervals of complete sectored counts
     # by using the mod 10 values of the header minute counts.
@@ -441,6 +442,8 @@ def subset_sectored_counts(
     filtered_dataset = filter_dataset_to_processing_day(
         complete_sectored_counts_dataset, packet_date, epoch_vals=epoch_per_complete_set
     )
+
+    print(f"epoch size after filtering: {len(filtered_dataset.epoch)}")
 
     # Trim livetime to the size of the sectored data but shifted 10 minutes earlier.
     filtered_dataset = subset_livetime(filtered_dataset)
@@ -506,6 +509,8 @@ def subset_livetime(dataset: xr.Dataset) -> xr.Dataset:
     # epoch values are per science frame which is 1 minute
     epoch_vals = dataset["epoch"].values
     epoch_livetime_vals = dataset["epoch_livetime"].values
+
+    print(f"epoch_vals: {epoch_vals}")
 
     if not epoch_vals.size:
         raise ValueError(
