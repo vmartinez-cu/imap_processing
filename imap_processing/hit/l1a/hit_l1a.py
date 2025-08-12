@@ -396,7 +396,13 @@ def subset_sectored_counts(
     # ensures that livetime doesn't get filtered when the original
     # epoch dimension is filtered for complete sets.
     sectored_counts_dataset = update_livetime_coord(sectored_counts_dataset)
+    print(f"packet date: {packet_date}")
     print(f"epoch size before filtering: {len(sectored_counts_dataset.epoch)}")
+    print(
+        f"first epoch: {
+            et_to_datetime64(ttj2000ns_to_et(sectored_counts_dataset.epoch.values[0]))
+        }"
+    )
 
     # Identify 10-minute intervals of complete sectored counts
     # by using the mod 10 values of the header minute counts.
